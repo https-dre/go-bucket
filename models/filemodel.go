@@ -1,11 +1,12 @@
 package models
 
-type File struct {
+type FileMetaData struct {
 	Id string `json:"id"`
 	Filename string `json:"filename"`
 	Path string `json:"path"`
 	Filetype string `json:"filetype"`
 	CreatedAtUTC string `json:"createdAtUTC"`
+	Key string `json:"key"`
 }
 /* 
 CREATE TABLE IF NOT EXISTS files (

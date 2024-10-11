@@ -33,6 +33,7 @@ func (filecontroller *FileController) UploadFile(c *gin.Context) {
 		"status": "success",
 		"fileId": fileData.Id,
 		"createdAtUTC": fileData.CreatedAtUTC,
+		"key": fileData.Key,
 	})
 }
 
@@ -47,4 +48,3 @@ func DownloadFile(c *gin.Context) {
 
 	c.File(filePath)
 }
-

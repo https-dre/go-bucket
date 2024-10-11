@@ -14,9 +14,9 @@ func CreateFileRepository(db *sql.DB) FileRepository {
 	return FileRepository{db: db}
 }
 
-func (repo *FileRepository) PersistFile(file *models.File) error {
-	insertFile := "INSERT INTO files (id, filename, path, filetype, createdAtUTC) VALUES (?, ?, ?, ?, ?)"
-	_, err := repo.db.Exec(insertFile, file.Id, file.Filename, file.Path, file.Filetype, file.CreatedAtUTC)
+func (repo *FileRepository) PersistFile(file *models.FileMetaData) error {
+	insertFile := "INSERT INTO files (id, filename, path, filetype, createdAtUTC, key) VALUES (?, ?, ?, ?, ?, ?)"
+	_, err := repo.db.Exec(insertFile, file.Id, file.Filename, file.Path, file.Filetype, file.CreatedAtUTC, file.Key)
 	if (err != nil) {
 		log.Println("Persist file error: ", err)
 		return err

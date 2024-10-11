@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"go-bucket/models"
 	"io"
@@ -16,7 +18,7 @@ import (
 )
 
 type IFileRepository interface {
-	PersistFile(file *models.File) error
+	PersistFile(file *models.FileMetaData) error
 }
 
 type FileUseCase struct {
@@ -27,7 +29,7 @@ func CreateFileUseCase(repo IFileRepository) FileUseCase {
 	return FileUseCase{repository: repo}
 }
 
-func (usecase *FileUseCase) UploadFileUseCase(file multipart.File, filename string) (*models.File, error) {
+func (usecase *FileUseCase) UploadFileUseCase(file multipart.File, filename string) (*models.FileMetaData, error) {
 	fileId, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -46,25 +48,31 @@ func (usecase *FileUseCase) UploadFileUseCase(file multipart.File, filename stri
 	if err != nil {
 		return nil, err
 	}
-
-	fileEntity := models.File{
+	createdAt := time.Now()
+	dataToHash := fmt.Sprintf("%s%d", filenameFormatted, createdAt.Unix())
+	hash := sha256.Sum256([]byte(dataToHash))
+	key := hex.EncodeToString(hash[:])
+	
+	fileEntity := models.FileMetaData{
 		Id:          fileId.String(),
 		Filename:    filenameFormatted,
-		CreatedAtUTC: time.Now().UTC().String(),
+		CreatedAtUTC: createdAt.UTC().String(),
 		Path:        fmt.Sprintf("bucket/%s_%s", fileId.String(), filenameFormatted),
 		Filetype:    filetype,
+		Key: key,
 	}
 	fmt.Println(fileEntity)
 
-	err = saveFile(file, fileEntity.Path)
-	if err != nil {
-		return nil, err
-	}
 	err = usecase.repository.PersistFile(&fileEntity)
 	if err != nil {
 		return nil, err
 	}
 
+	err = saveFile(file, fileEntity.Path)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &fileEntity, nil
 }
 
@@ -104,6 +112,7 @@ var mimeToExt = map[string]string{
 	"text/plain": ".txt",
 	"application/pdf": ".pdf",
 	"application/zip": ".zip",
+	"text/markdown": ".md",
 	// Adicione mais tipos MIME e suas extensões conforme necessário
 }
 
