@@ -1,0 +1,5 @@
+test/
+database.db
+bucket/
+temp/
+.env
